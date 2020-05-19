@@ -5,7 +5,6 @@ import scipy.cluster as clstr
 import scipy.spatial as spatial
 from collections import defaultdict
 from functools import partial
-image = cv2.imread('./1.jpeg',0)
 
 def auto_canny(image, sigma=0.33):
     """
@@ -102,7 +101,7 @@ def four_point_transform(img, points, square_length=1816):
     M = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(img, M, (square_length, square_length))
 
-img = cv2.imread('./1.jpeg')
+img = cv2.imread('./0.jpeg')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 gray = cv2.blur(gray, (3, 3))
 edges = auto_canny(gray)
@@ -110,7 +109,15 @@ edges = auto_canny(gray)
 ##plt.imshow(img)
 ##plt.title('My image')
 ##plt.show()
-lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
+#lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
+minLineLength=100
+lines = cv2.HoughLinesP(image=edges,rho=1,theta=np.pi/180, threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=110)
+
+a,b,c = lines.shape
+for i in range(a):
+    cv2.line(img, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (0, 0, 255), 1)
+    cv2.imwrite('houghlines5.jpg',img)
+
 if lines is None:
         print 'no lines'
         
@@ -119,9 +126,9 @@ lines = np.reshape(lines, (-1, 2))
 
 # Compute intersection points
 h, v = hor_vert_lines(lines)
-#if len(h) < 9 or len(v) < 9:
-#    print 'too few lines'
-#    return None
+if len(h) < 9 or len(v) < 9:
+    print 'too few lines'
+    #return None
 points = intersections(h, v)
 
 # Cluster intersection points
@@ -134,11 +141,9 @@ points = find_corners(points, (img_shape[1], img_shape[0]))
 # Perspective transform
 new_img = four_point_transform(img, points)
 while True:
-    cv2.imshow('img',img)
-    cv2.imshow('gray',gray)
-    cv2.imshow('edges',edges)
+    #cv2.imshow('img',img)
+    #cv2.imshow('gray',gray)
     cv2.imshow('new_img',new_img)
-    k = cv2.waitKey(5) & 0xFF
-    if k== 27:
-        break
-cv2.destroyAllWindows()
+    cv2.imshow('lines', img)
+    k = cv2.waitKey(0)
+    cv2.destroyAllWindows()
