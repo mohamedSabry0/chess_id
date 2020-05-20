@@ -122,7 +122,7 @@ if lines is None:
         print 'no lines'
         
 
-lines = np.reshape(lines, (-1, 2))
+#lines = np.reshape(lines, (-1, 2))
 
 # Compute intersection points
 h, v = hor_vert_lines(lines)
